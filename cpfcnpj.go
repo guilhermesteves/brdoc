@@ -7,68 +7,48 @@ import (
 	"unicode"
 )
 
-// IsCPF verifies if the string is a valid CPF
+// Regexp pattern for CPF and CNPJ.
+var (
+	CPFRegexp  = regexp.MustCompile(`^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$`)
+	CNPJRegexp = regexp.MustCompile(`^\d{2}\.?\d{3}\.?\d{3}\/?(:?\d{3}[1-9]|\d{2}[1-9]\d|\d[1-9]\d{2}|[1-9]\d{3})-?\d{2}$`)
+)
+
+// IsDocument verifies if the given string is a valid
+// CPF or CNPJ document.
+func IsDocument(doc string) bool {
+	return IsCPF(doc) || IsCNPJ(doc)
+}
+
+// IsCPF verifies if the given string is a valid CPF
 // document.
 func IsCPF(doc string) bool {
 
 	const (
-		sizeWithoutDigits = 9
-		position          = 10
+		size = 9
+		pos  = 10
 	)
 
-	return isCPFOrCNPJ(
-		doc,
-		ValidateCPFFormat,
-		sizeWithoutDigits,
-		position,
-	)
+	return isCPFOrCNPJ(doc, CPFRegexp, size, pos)
 }
 
-// IsCNPJ verifies if the string is a valid CNPJ
+// IsCNPJ verifies if the given string is a valid CNPJ
 // document.
 func IsCNPJ(doc string) bool {
 
 	const (
-		sizeWithoutDigits = 12
-		position          = 5
+		size = 12
+		pos  = 5
 	)
 
-	return isCPFOrCNPJ(
-		doc,
-		ValidateCNPJFormat,
-		sizeWithoutDigits,
-		position,
-	)
-}
-
-// ValidateCPFFormat verifies if the CPF has a
-// valid format.
-func ValidateCPFFormat(doc string) bool {
-
-	const (
-		pattern = `^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$`
-	)
-
-	return regexp.MustCompile(pattern).MatchString(doc)
-}
-
-// ValidateCNPJFormat verifies if the CNPJ has a
-// valid format.
-func ValidateCNPJFormat(doc string) bool {
-
-	const (
-		pattern = `^\d{2}\.?\d{3}\.?\d{3}\/?(:?\d{3}[1-9]|\d{2}[1-9]\d|\d[1-9]\d{2}|[1-9]\d{3})-?\d{2}$`
-	)
-
-	return regexp.MustCompile(pattern).MatchString(doc)
+	return isCPFOrCNPJ(doc, CNPJRegexp, size, pos)
 }
 
 // isCPFOrCNPJ generates the digits for a given
 // CPF or CNPJ and compares it with the original
 // digits.
-func isCPFOrCNPJ(doc string, validate func(string) bool, size int, position int) bool {
+func isCPFOrCNPJ(doc string, pattern *regexp.Regexp, size int, position int) bool {
 
-	if !validate(doc) {
+	if !pattern.MatchString(doc) {
 		return false
 	}
 
